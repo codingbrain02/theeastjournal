@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Segoe UI', Arial, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+a { text-decoration: none; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid #315943; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+@layer components {
+  .eyebrow { @apply mb-5 text-[11px] font-bold uppercase tracking-[.22em] text-[#4d7656]; }
+  .section-title { @apply max-w-[690px] font-serif text-[clamp(2.5rem,4vw,4.5rem)] leading-[1.04] tracking-[-.055em] text-[#1c2823]; }
+  .section-intro { @apply mt-5 max-w-md text-[15px] leading-[1.8] text-[#58675c]; }
+  .schedule-badge { @apply inline-block rounded-full border border-[#84a38b] px-3 py-1 text-xs font-bold tracking-[.08em] text-[#d9e7d9]; }
+}
