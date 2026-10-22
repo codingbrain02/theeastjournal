@@ -30,6 +30,8 @@ function CallbackDialog({ medication, options, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [payment, setPayment] = useState('')
   const [complete, setComplete] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -43,7 +45,7 @@ function CallbackDialog({ medication, options, onClose }: Props) {
     onClose()
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = event.currentTarget
     const phone = form.elements.namedItem('phone') as HTMLInputElement
@@ -59,7 +61,26 @@ function CallbackDialog({ medication, options, onClose }: Props) {
       street.reportValidity()
       return
     }
-    setComplete(true)
+    setSubmitting(true)
+    setError('')
+    try {
+      const data = Object.fromEntries(new FormData(form).entries())
+      data.medication = options.find((item) => item.id === data.medication)?.name || 'General question / not listed'
+      const response = await fetch('/api/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        const result = await response.json()
+        throw new Error(result.error || 'We could not send your request. Please try again.')
+      }
+      setComplete(true)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'We could not send your request. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return <dialog
@@ -71,7 +92,7 @@ function CallbackDialog({ medication, options, onClose }: Props) {
   >
     <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#e5e8e1] bg-[#fffdfa] px-5 py-4 sm:px-6">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#315943]">The East Journal · Demo call back</p>
+        <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#315943]">The East Journal · Call back</p>
         <h2 id="callback-heading" className="mt-1 font-serif text-[22px] leading-tight">Request a call from a pharmacist</h2>
         <p className="mt-1 text-xs text-[#69766c]">About {medication.name} · {medication.schedule}</p>
       </div>
@@ -80,13 +101,13 @@ function CallbackDialog({ medication, options, onClose }: Props) {
 
     {complete ? <div className="px-6 py-10 text-center">
       <div className="mx-auto grid size-12 place-items-center rounded-full bg-[#e3efe4] text-xl font-semibold text-[#28513a]">✓</div>
-      <h3 className="mt-5 font-serif text-2xl">Demo request complete</h3>
-      <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-[#59675d]">This was a preview of the call-back process. Your details were not sent or stored, and no one will call.</p>
+      <h3 className="mt-5 font-serif text-2xl">Request sent</h3>
+      <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-[#59675d]">Your request was sent. Please wait to be contacted at the phone number you provided.</p>
       <button type="button" onClick={close} className="callback-primary mt-7">Done</button>
     </div> : <form onSubmit={handleSubmit} onInput={(event) => {
       if (event.target instanceof HTMLInputElement) event.target.setCustomValidity('')
     }} className="px-5 py-5 sm:px-6">
-      <p className="mb-5 rounded-md bg-[#edf3ec] px-3 py-2 text-xs leading-relaxed text-[#3b5a45]">Interactive demo only. This form does not send or store information, and no call will be made.</p>
+      <p className="mb-5 rounded-md bg-[#edf3ec] px-3 py-2 text-xs leading-relaxed text-[#3b5a45]">This request sends the information below to the site owner through Telegram. Do not include symptoms, medical history, or payment account details.</p>
 
       <label className="callback-field">
         <span className="callback-label">Medication</span>
@@ -130,10 +151,10 @@ function CallbackDialog({ medication, options, onClose }: Props) {
 
       <div className="mt-5 space-y-3">
         <label className="callback-check"><input type="checkbox" required /><span>I’m 18 or older and I’m asking about my own prescription.</span></label>
-        <label className="callback-check"><input type="checkbox" required /><span>I understand this is a demo form. No information will be submitted and no call will be made.</span></label>
+        <label className="callback-check"><input type="checkbox" required /><span>I agree to send these details to the site owner through Telegram for a call-back request.</span></label>
       </div>
-      <p className="mt-5 text-[11px] font-medium text-[#8e633a]">Demo only · No information is sent or stored.</p>
-      <div className="mt-4 flex justify-end gap-2 border-t border-[#e5e8e1] pt-4"><button type="button" onClick={close} className="callback-secondary">Cancel</button><button type="submit" className="callback-primary">Request call back</button></div>
+      {error && <p role="alert" className="mt-5 text-sm font-medium text-red-700">{error}</p>}
+      <div className="mt-4 flex justify-end gap-2 border-t border-[#e5e8e1] pt-4"><button type="button" onClick={close} className="callback-secondary">Cancel</button><button type="submit" disabled={submitting} className="callback-primary disabled:opacity-60">{submitting ? 'Sending…' : 'Request call back'}</button></div>
     </form>}
   </dialog>
 }
