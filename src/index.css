@@ -18,3 +18,40 @@ button { cursor: pointer; }
   .section-intro { @apply mt-5 max-w-md text-[15px] leading-[1.8] text-[#58675c]; }
   .schedule-badge { @apply inline-block rounded-full border border-[#84a38b] px-3 py-1 text-xs font-bold tracking-[.08em] text-[#d9e7d9]; }
 }
+
+.callback-dialog {
+  width: min(600px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #fffdfa;
+  color: #1c2823;
+  box-shadow: 0 28px 80px rgba(18, 32, 23, .28);
+}
+.callback-dialog::backdrop { background: rgba(22, 34, 26, .62); backdrop-filter: blur(2px); }
+.callback-field { display: grid; gap: 5px; min-width: 0; }
+.callback-label { font-size: 12px; font-weight: 600; color: #334238; }
+.callback-input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #d6ded3;
+  border-radius: 5px;
+  background: #fff;
+  padding: 8px 10px;
+  color: #26382b;
+  font: inherit;
+  font-size: 13px;
+}
+.callback-input:focus { border-color: #315943; outline: 2px solid #d5e7d8; outline-offset: 0; }
+.callback-group { border: 0; border-top: 1px solid #dce2d9; margin-top: 20px; padding: 14px 0 0; }
+.callback-group legend { padding-right: 8px; font-family: Georgia, serif; font-size: 16px; font-weight: 600; }
+.callback-hint { border-radius: 5px; background: #f5f6f2; padding: 9px 11px; color: #627064; font-size: 11px; line-height: 1.55; }
+.callback-check { display: flex; align-items: flex-start; gap: 9px; color: #4b5c4f; font-size: 11px; line-height: 1.55; }
+.callback-check input { flex: none; width: 15px; height: 15px; margin-top: 1px; accent-color: #234b38; }
+.callback-primary, .callback-secondary { min-height: 38px; border-radius: 5px; padding: 8px 15px; font-size: 12px; font-weight: 700; }
+.callback-primary { border: 1px solid #234b38; background: #234b38; color: white; }
+.callback-primary:hover { background: #173726; }
+.callback-secondary { border: 1px solid #d6ded3; background: transparent; color: #26382b; }
+.callback-secondary:hover { background: #f3f5ef; }

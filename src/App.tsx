@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import CallbackDialog from './CallbackDialog'
 
 type Medication = { id: string; name: string; brand: string; schedule: 'C-II' | 'C-III' | 'C-IV' | 'C-V'; use: string; note: string }
 const medicines: Medication[] = [
@@ -41,6 +42,8 @@ function App() {
   const [filter, setFilter] = useState<Filter>('All')
   const [menuOpen, setMenuOpen] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [selectedMedicine, setSelectedMedicine] = useState<Medication | null>(null)
+  const openerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const update = () => {
@@ -54,6 +57,16 @@ function App() {
   }, [])
 
   const visible = filter === 'All' ? medicines : medicines.filter((med) => med.schedule === filter)
+
+  function openCallback(medication: Medication) {
+    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setSelectedMedicine(medication)
+  }
+
+  function closeCallback() {
+    setSelectedMedicine(null)
+    requestAnimationFrame(() => openerRef.current?.focus())
+  }
 
   return <div className="min-h-screen bg-[#f7f8f5] text-[#1c2823]">
     <div className="border-b border-[#dce4db] bg-[#eaf0e9] px-5 py-2.5 text-center text-xs leading-relaxed text-[#3d5849] sm:text-sm">
@@ -110,7 +123,7 @@ function App() {
       <section id="medications" className="scroll-mt-28 mx-auto max-w-[1360px] px-5 py-20 sm:px-8 lg:px-12 lg:py-28"><div className="grid gap-4 md:grid-cols-[1fr_.7fr] md:items-end"><div><p className="eyebrow">03 / Medication guide</p><h2 className="section-title">Explore medicines by schedule.</h2></div><p className="max-w-lg text-sm leading-[1.75] text-[#58675c]">Examples of commonly discussed controlled medications. These descriptions are general, and every one requires a valid prescription. A clinician or pharmacist can explain the risks for your situation.</p></div>
         <div className="mt-10 flex flex-wrap gap-2" role="group" aria-label="Filter medications by schedule">{filters.map((item) => <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)} className={'rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors ' + (filter === item ? 'border-[#234b38] bg-[#234b38] text-white' : 'border-[#d8e1d8] bg-white text-[#4b5d50] hover:border-[#234b38]')}>{item === 'All' ? 'All medicines (' + medicines.length + ')' : 'Schedule ' + item.slice(2)}</button>)}</div>
         <p className="mt-4 text-xs text-[#78877b]" aria-live="polite">Showing {visible.length} {visible.length === 1 ? 'medicine' : 'medicines'}</p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{visible.map((med) => <article key={med.id} className="group flex flex-col overflow-hidden border border-[#e0e7de] bg-white"><div className="aspect-[4/3] overflow-hidden bg-[#e9e9e3]"><img src={'/images/' + med.id + '.webp'} alt={'Illustrative packaging for ' + med.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" /></div><div className="flex flex-1 flex-col p-5"><div className="mb-4 flex items-center justify-between gap-2"><span className="rounded-full bg-[#e9f0e8] px-2.5 py-1 text-[10px] font-bold tracking-[.1em] text-[#305440]">{med.schedule}</span><span className="text-right text-[11px] text-[#748177]">{med.use}</span></div><h3 className="font-serif text-[21px] leading-[1.15] tracking-[-.02em]">{med.name}</h3><p className="mt-1 text-xs text-[#819087]">{med.brand}</p><p className="mt-4 border-t border-[#e7ebe5] pt-4 text-[13px] leading-[1.65] text-[#536157]">{med.note}</p></div></article>)}</div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{visible.map((med) => <article key={med.id} className="group flex flex-col overflow-hidden border border-[#e0e7de] bg-white"><div className="aspect-[4/3] overflow-hidden bg-[#e9e9e3]"><img src={'/images/' + med.id + '.webp'} alt={'Illustrative packaging for ' + med.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" /></div><div className="flex flex-1 flex-col p-5"><div className="mb-4 flex items-center justify-between gap-2"><span className="rounded-full bg-[#e9f0e8] px-2.5 py-1 text-[10px] font-bold tracking-[.1em] text-[#305440]">{med.schedule}</span><span className="text-right text-[11px] text-[#748177]">{med.use}</span></div><h3 className="font-serif text-[21px] leading-[1.15] tracking-[-.02em]">{med.name}</h3><p className="mt-1 text-xs text-[#819087]">{med.brand}</p><p className="mt-4 border-t border-[#e7ebe5] pt-4 text-[13px] leading-[1.65] text-[#536157]">{med.note}</p><div className="mt-auto pt-5"><p className="mb-2 text-[11px] text-[#748177]"><span className="mr-1 rounded bg-[#edf0e8] px-1.5 py-0.5 font-bold uppercase tracking-[.07em] text-[#315943]">The East Journal demo</span> Pharmacist call</p><button type="button" onClick={() => openCallback(med)} className="flex w-full items-center justify-center gap-2 rounded-md bg-[#234b38] px-3 py-2.5 text-sm font-semibold text-white hover:bg-[#173726]" aria-label={'Request a demo call back about ' + med.name}>Request a call back <Arrow /></button></div></div></article>)}</div>
         <p className="mt-6 text-xs leading-relaxed text-[#77877b]">Images show illustrative, unbranded packaging; they are not product identifiers. Never use a photograph to identify a medicine.</p>
       </section>
 
@@ -137,6 +150,7 @@ function App() {
     </main>
 
     <footer className="bg-[#1e3027] px-5 py-10 text-white sm:px-8 lg:px-12"><div className="mx-auto flex max-w-[1360px] flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><a href="#top" className="font-serif text-2xl tracking-[-.04em]">The East Journal</a><p className="mt-2 text-xs text-[#b2c2b4]">A clearer look at care. General information only.</p></div><div className="flex gap-5 text-xs text-[#c2cfc3]"><a href="#sources" className="hover:text-white">Sources</a><a href="#disclosure" className="hover:text-white">Disclosure</a><a href="#top" className="hover:text-white">Back to top ↑</a></div></div></footer>
+    {selectedMedicine && <CallbackDialog medication={selectedMedicine} options={medicines} onClose={closeCallback} />}
   </div>
 }
 
